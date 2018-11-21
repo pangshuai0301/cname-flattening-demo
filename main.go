@@ -9,6 +9,7 @@ import (
         "net/url"
 	"os"
 	"strings"
+	"errors"
 )
 
 type Domain struct {
@@ -114,7 +115,7 @@ func CheckRecord() error {
                 if FlagExist == 0 {
                 	err = RemoveDomainRecord(id) // record id
                 	if err != nil {
-                	        fmt.Println("del record Failed.../ value: ", ip)
+                	        fmt.Println(err, "ip: ",ip)
                 	        continue
                 	}
                 	fmt.Println("del record success.../ value: ", ip)
@@ -133,7 +134,7 @@ func CheckRecord() error {
 		if FlagNeedAdd == 1 {
 			err = CreateDomainRecord("@", "A", "0", n) // subname, type, line, value
 			if err != nil {
-				fmt.Println("Add record Failed.../ value: ", n)
+				fmt.Println(err)
 				continue
 			}
 			fmt.Println("Add record success.../ value: ", n)
@@ -216,6 +217,11 @@ func CreateDomainRecord(Subdomain string, RecordType string, RecordLineId string
 
     //fmt.Printf("%+v", r)
 
+    if r.Status.Code != "1" {
+        Errlog := fmt.Sprintf("CreateDomainRecord Err %s, code: %s", Value, r.Status.Code)
+        return errors.New(Errlog)
+    }
+
     return nil
 
 }
@@ -237,6 +243,11 @@ func RemoveDomainRecord(RecordId string) error {
     if err != nil {
         fmt.Println("Paser json Error...")
         return err
+    }
+
+    if r.Status.Code != "1" {
+        Errlog := fmt.Sprintf("RemoveDomainRecord, code: %s", r.Status.Code)
+        return errors.New(Errlog)
     }
 
     //fmt.Printf("%+v", r)
